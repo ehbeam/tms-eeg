@@ -23,11 +23,14 @@
       body {
         font-family: Avenir;
         margin: 45px;
+        margin-top: 35px;
       }
 
       h1 {
         font-family: Superclarendon;
         font-size: 28px;
+        margin: 25px;
+        width: 750px;
       }
 
       button {
@@ -104,14 +107,17 @@
 
       .group-color {
         display: inline-block;
-        height: 24px;
-        width: 24px;
-        border-radius: 5px;
+        height: 20px;
+        width: 20px;
+        border-radius: 20px;
         background: blue;
         opacity: 0.5;
         margin-left: 5px;
         margin-right: 20px;
-        margin-bottom: -7px;
+        margin-bottom: -5px;
+        border-color: white;
+        border-width: 2px;
+        border-style: solid;
       }
 
       #group-button {
@@ -150,9 +156,24 @@
       }
 
       .data-select {
-        width: 278px;
+        font-size: 10px;
+        width: 280px;
         margin-left: 3px;
         margin-right: 3px;
+      }
+
+      .dot {
+        opacity: 0.65;
+      }
+
+      .tooltip {
+        font-family: Avenir;
+        padding: 5px;
+        padding-top: 2px;
+        padding-bottom: 1px;
+        background: #E5E5E5;
+        border-radius: 6px;
+        opacity: 0.35;
       }
 
     </style>
@@ -163,13 +184,13 @@
         
     <center>
 
-      <h1>TMS-EEG Data Viewer</h1><br/>
+      <h1>TMS-EEG Data Viewer</h1>
 
       <div id="group-container">
 
         <div id="group-toolbar">
         
-          <div class="group" id="group-1" style="display:inline-block;">
+          <div class="group" id="group-1" style="display:none;">
             <span class="group-label">Group 1</span><span class="group-select-label">Project:</span><select id="project-1" class="group-select"></select><span class="group-select-label">Condition:</span><select id="condition-1" class="group-select"></select><span class="group-select-label">Color:</span><div class="group-color" id="color-1"></div><span id="n-1"><i>N</i> = 0</span>
           </div>
 
@@ -207,24 +228,6 @@
 
     </center>
 
-  <!-- Modal -->
-    <div class="modal fade" id="myModal" role="dialog" data-keyboard="false" data-backdrop="static">
-      <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h4 class="modal-title">Deleting Point</h4>
-          </div>
-          <div class="modal-body">
-            <p>Are you sure you want to remove the point?</p>
-          </div>
-          <div class="modal-footer">
-                  <button id="btn-no-delete" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                  <button id="btn-yes-delete" type="button" class="btn btn-danger btn-ok">Delete</button>
-          </div>
-        </div>
-      </div>
-    </div>
-          
     <script>
 
       var file = "data/TMS-EEG_Cohen_PAINT_All.csv";
@@ -273,82 +276,93 @@
             loadSelect("condition-" + i, conditions[k])
           }
         }
-        
-        var nGroups = 1;
 
-        function addGroupToolbar() {
+        // Set Color Scale
+        let palette = d3.scaleOrdinal(d3.schemeCategory10);
+        var colors = [];
+        for (var i = 0; i < 5; i++) { colors.push(palette(i)) };
+        
+        var nGroups = 0;
+
+        function addGroup() {
           if (nGroups < 5) {
             nGroups = nGroups + 1;
             document.getElementById("group-" + nGroups).style.display = "inline-block";
+            document.getElementById("color-" + nGroups).style.background = colors[nGroups-1];
           }
         }
 
-        d3.select("#group-button")
-          .on("click", addGroupToolbar)
+        addGroup();
+        d3.select("#group-button").on("click", addGroup)
 
-        function randomData(samples, num) {
-          let newData = [];
-          let name = "group-" + num;
-          for (i = 1; i < samples; i++) {
-            newData.push({
-              x: i,
-              y: i+10*Math.random(),
-              name: name
-            });
-          }
+        function updateAxisLabels() {
 
-          newData.sort(function(a, b) {
-            return a.x - b.x;
-          })
-         
-          return {key: name, values: newData};
+          var xEl = document.getElementById("x-data");
+          var xVar = xEl.options[xEl.selectedIndex].value;
+          d3.selectAll("#x-label").text(xVar);
+
+          var yEl = document.getElementById("y-data");
+          var yVar = yEl.options[yEl.selectedIndex].value;
+          d3.selectAll("#y-label").text(yVar);
+
         }
 
-        var data = [];
-
-        for(let i = 0; i < 2; i++) {
-          data[i] = randomData(16,i);
-        }
-
-
-        // Set Color Scale
-        let color = d3.scaleOrdinal(d3.schemeCategory20);
-
-        var scales = {
-              'Linear': d3.scaleLinear(),
-              'Power': d3.scalePow().exponent(2),
-              'Log': d3.scaleLog(),
-              'Sqrt': d3.scaleSqrt()
+        function loadData() {
+          var xVar = " " + d3.select("#x-data").node().value;
+          var yVar = " " + d3.select("#y-data").node().value;
+          for (var group = 1; group < nGroups + 1; group++) {
+            var project = d3.select("#project-" + group).node().value; 
+            var condition = " " + d3.select("#condition-" + group).node().value;
+            var values = []; var n = 0;
+            for (var i = 0; i < data.length; i++) {
+              if ((data[i]["Project"] == project) & (data[i][" Condition"] == condition)) {
+                n = n + 1;
+                if ((typeof data[i][xVar] !== "undefined") & (typeof data[i][yVar] !== "undefined")) {
+                  values.push({ x: data[i][xVar], y: data[i][yVar], row: i });
+                }
+              }
             }
+            document.getElementById("n-" + group).innerHTML = "<i>N</i> = " + n;
+            dataXY[group-1] = { key: "group-" + group, values: values };
+          }
+          updateAxisLabels();
+          update();
+        }
+
+        dataXY = [];
+
+        d3.select("#x-data").on("change", loadData);
+        d3.select("#y-data").on("change", loadData);
+
+        d3.select("#project-1").on("change", loadData);
+        d3.select("#project-2").on("change", loadData);
+        d3.select("#project-3").on("change", loadData);
+        d3.select("#project-4").on("change", loadData);
+        d3.select("#project-5").on("change", loadData);
+
+        d3.select("#condition-1").on("change", loadData);
+        d3.select("#condition-2").on("change", loadData);
+        d3.select("#condition-3").on("change", loadData);
+        d3.select("#condition-4").on("change", loadData);
+        d3.select("#condition-5").on("change", loadData);
             
         var zoom = d3.zoom().on('zoom', zoomed);
          $('#myModal').modal('hide');
 
-        /********************** Turn off Toggle Confirm ****************/
-        var isConfirm = true;
-        d3.select("#toggleConfirm").on('click', function() {
-          isConfirm = !isConfirm
-          
-          if (!isConfirm) {
-            d3.select(this).text('Turn On Confirm');
-          } else {
-            d3.select(this).text('Turn Off Confirm');
-          }
-        })
-         
-        /*********************** Set Plot Elements *********************/
         var margin = {
           top: 20,
           right: 50,
           bottom: 50,
-          left: 60
+          left: 78
         };
 
-        var width = 775 - margin.left - margin.right,
-          height = 400 - margin.top - margin.bottom;
+        var width = 800 - margin.left - margin.right,
+          height = 375 - margin.top - margin.bottom;
 
-        let xExtent = findExtent(data, 'x');
-        let yExtent = findExtent(data, 'y');
+        var duration = 350;
+
+        let xExtent = findExtent(dataXY, 'x');
+        let yExtent = findExtent(dataXY, 'y');
           
         var xScale = d3.scaleLinear()
           .range([0, width])
@@ -370,45 +384,37 @@
             return yScale(d.y);
           });
 
+        // Define the div for the tooltip
+        var div = d3.select("body").append("div") 
+            .attr("class", "tooltip")       
+            .style("opacity", 0);
+
         var svg = d3.select("#plot").append("svg")
            .attr("width", width + margin.left + margin.right)
            .attr("height", height + margin.top + margin.bottom);
 
-        svg.append("text")   
+        svg.append("text")
+            .transition().duration(duration) 
             .attr("id", "x-label")          
             .attr("transform",
                   "translate(" + (width / 2 + margin.left) + " ," + 
                                  (height + margin.top + 42) + ")")
             .style("text-anchor", "middle")
+            .style("font-weight", "bold")
             .text("");
 
         svg.append("text")
+            .transition().duration(duration)
             .attr("id", "y-label")
             .attr("transform", "rotate(-90)")
-            .attr("y", 0 - margin.left + 70)
-            .attr("x", 0 - (height / 2) - 15)
+            .attr("y", 0 - margin.left + 107)
+            .attr("x", 0 - (height / 2) - margin.top)
             .attr("dy", "1em")
             .style("text-anchor", "middle")
+            .style("font-weight", "bold")
             .text(""); 
 
-        function updateVars() {
-
-          var xEl = document.getElementById("x-data");
-          var xVar = xEl.options[xEl.selectedIndex].value;
-          d3.selectAll("#x-label").text(xVar);
-
-          var yEl = document.getElementById("y-data");
-          var yVar = yEl.options[yEl.selectedIndex].value;
-          d3.selectAll("#y-label").text(yVar);
-
-        }
-
-        d3.select("#x-data")
-          .on("change", updateVars)
-        d3.select("#y-data")
-          .on("change", updateVars)     
-
-        // make a clip path
+        // Make a clip path
         svg.append("defs").append("clipPath")
               .attr("id", "clip")
               .append("rect")
@@ -435,45 +441,12 @@
           .attr('id', "axis--y")
           .call(yAxis);
           
-        var line = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-        var dot = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        var dot = svg.append("g")
+              .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
         zoomWindow.call(zoom);
 
         update();
-
-        /****************** Update Below **************************/
-        d3.select("#addData").on('click', newRandom);
-
-        var g = 1;
-
-        function newRandom() {
-          let newData = [];
-
-          for (i = 1; i < 15; i++) {
-            newData.push({
-              x: g,
-              y: g+10*Math.random(),
-              name: "group-2"
-            });
-            
-            g++;
-          }
-          
-          if(data.length === 2) {
-            data.push({key: 'group-2', values: newData});
-          } else {
-            data[2].values = data[2].values.concat(newData);
-          }
-          
-          data.forEach(el => {
-            el.values.sort(function(a,b) {
-              return a.x - b.x;
-            })
-          });
-            
-            update();
-        }
 
         function findExtent(arr, prop) {
           var max = d3.max(arr, function(array) {
@@ -491,89 +464,51 @@
 
         function update() {
 
-          let xExtent = findExtent(data, 'x');
-          let yExtent = findExtent(data, 'y');
+          let xExtent = findExtent(dataXY, 'x');
+          let yExtent = findExtent(dataXY, 'y');
           
-          // Adjust scale's domain whenver new data is added
+          // Adjust scale's domain whenever new data is added
           xScale.domain(xExtent).nice();
           yScale.domain(yExtent).nice();
           
           // Rescale to zoom's scale
-          let t = d3.zoomTransform( zoomWindow.node());
+          let t = d3.zoomTransform(zoomWindow.node());
           let new_yScale = t.rescaleY(yScale); 
           let new_xScale = t.rescaleX(xScale);
-          
-          // Adjust plotline generator
-          plotLine = d3.line()
-          .curve(d3.curveMonotoneX)
-          .x(function(d) {
-            return new_xScale(d.x);
-          })
-          .y(function(d) {
-            return new_yScale(d.y);
-          });
           
           // Adjust axis labels
           yAxis.scale(new_yScale);
           xAxis.scale(new_xScale);
           
-          svg.transition().duration(750).select('.y.axis').call(yAxis);
-          svg.transition().duration(750).select('.x.axis').call(xAxis);
+          svg.transition().duration(duration).select('.y.axis').call(yAxis);
+          svg.transition().duration(duration).select('.x.axis').call(xAxis);
 
+          svg.selectAll("circle").remove();
 
           // Add and update to plot data
-        data.forEach(function (d, i) {
-
-          if(d3.select("#line-"+i).empty()) {
-                //add new charts
-                // Add line plot
-              line.append("g")
-                  .attr("id", "line-" + i)
-                  .attr("clip-path", "url(#clip)")
-                    .append("path")
-                    .data([d.values])
-                    .attr("class", "pointlines")
-                    .attr("d", plotLine)
-                    .style("fill", "none")
-                    .style("stroke", function () {
-                        return d.color = color(d.key);
-                    });;
-
-              dot.append("g")
-                .attr("id", "scatter-" + i)
-                .attr("clip-path", "url(#clip)")
-                .selectAll(".dot")
-                .data(d.values)
-                  .enter().append("circle")
-                  .attr("class", "dot")
-                  .attr("r", 5)
-                  .attr("cx", function(d) {
-                    return new_xScale(d.x);
-                  })
-                  .attr("cy", function(d) {
-                    return new_yScale(d.y);
-                  })
-                  .attr("stroke", "white")
-                  .attr("stroke-width", "2px")
-                  .style("fill", function() {
-                    return d.color = color(d.key);
-                  })
-                  .on("click", function(d,i) {
-                    let s = d3.select(this);
-                    remove(s,i, d.name);
-                  });
-                  
-          } else {
-              let lineSelect = line.select("#line-"+i).select("path").data([d.values]);
-              
-              lineSelect.transition().duration(750)
-                .attr("d", plotLine);
-
-              //Update all circles
-              let scatterSelect = dot.select("#scatter-"+i).selectAll("circle").data(d.values);
-              
-              scatterSelect.transition()
-                .duration(750)
+          dataXY.forEach(function (d, i) {
+            dot.append("g")
+              .attr("id", "scatter-" + i)
+              .attr("clip-path", "url(#clip)")
+              .selectAll(".dot")
+              .data(d.values)
+                .enter().append("circle")
+                .attr("class", "dot")
+                .on("mouseover", function(d) {  
+                    div.transition()    
+                        .duration(100)    
+                        .style("opacity", 0.9);    
+                    div.html("Row " + d.row)  
+                        .style("left", (d3.event.pageX) + 1 + "px")   
+                        .style("top", (d3.event.pageY - 26) + "px");  
+                    })          
+                .on("mouseout", function(d) {   
+                    div.transition()    
+                        .duration(100)    
+                        .style("opacity", 0); 
+                })
+                .transition().duration(duration)
+                .attr("r", 4)
                 .attr("cx", function(d) {
                   return new_xScale(d.x);
                 })
@@ -583,37 +518,12 @@
                 .attr("stroke", "white")
                 .attr("stroke-width", "2px")
                 .style("fill", function() {
-                  return d.color = color(d.key);
-                 });
-
-              //Enter new circles
-              scatterSelect.enter()
-                .append("circle")
-                  .attr("cx", function(d) {
-                    return new_xScale(d.x);
-                  })
-                  .attr("cy", function(d) {
-                    return new_yScale(d.y);
-                  })
-                  .attr("r", 5)
-                  .attr("stroke", "white")
-                  .attr("stroke-width", "2px")
-                  .style("fill", function() {
-                    return d.color = color(d.key);
-                  })
-                  .on("click", function(d,i) {
-                    let s = d3.select(this);
-                    remove(s,i, d.name);
-                  });
-
-              // Remove old
-              scatterSelect.exit().remove()
-            }
+                  return d.color = colors[i];
+                })
         });
 
-        }
+      }
 
-          
         function modalConfirm(callback){
               $("#myModal").modal('show')
               
@@ -628,42 +538,6 @@
               });
          };
 
-        function remove(sel, index, name) {
-          
-          if (isConfirm) {
-            modalConfirm(function(confirm){
-              if(confirm){
-                $("#btn-no-delete").off();
-                $("#btn-yes-delete").off();
-
-                console.log("Removing point at: " + name + ": values[" + index + "]")
-                data.forEach(el => {
-                  if(el.key === name) {
-                    el.values.splice(index,1);
-                  }
-                });
-
-                update();
-              }else{
-                $("#btn-no-delete").off();
-                $("#btn-yes-delete").off();
-                console.log("NOT DELETING");
-                return;
-              }
-            });
-          } else {
-            console.log("Removing point at: " + name + ": values[" + index + "]")
-                data.forEach(el => {
-                  if(el.key === name) {
-                    el.values.splice(index,1);
-                  }
-                });
-                
-            update();
-          }
-        }
-
-        /************ Change Scales ****************************/
         d3.select("#x-scales").on('change', setXScale); 
         d3.select("#y-scales").on('change', setYScale);
         d3.select("#resetScales").on("click", resetScales);
@@ -696,50 +570,48 @@
           xScale.range([0, width]);
           yScale.range([height, 0]);
           
-          // update plot
           update();
         }
 
-        /****************** Reset plot ***********************************/
         d3.select("#resetPlot").on('click', resetPlot);
 
         function resetPlot() {
-          zoomWindow.transition().duration(750)
+          zoomWindow.transition().duration(duration)
              .call(zoom.transform, d3.zoomIdentity);
         }
                     
-        /****************** Zoom Function ********************************/
         function zoomed() {
-                // Update Scales
-                let new_yScale = d3.event.transform.rescaleY(yScale);
-                let new_xScale = d3.event.transform.rescaleX(xScale);
-                
-                // re-scale axes
-                svg.select(".y.axis")
-                    .call(yAxis.scale(new_yScale));
 
-                svg.select(".x.axis")
-                    .call(xAxis.scale(new_xScale));
+            // Update Scales
+            let new_yScale = d3.event.transform.rescaleY(yScale);
+            let new_xScale = d3.event.transform.rescaleX(xScale);
+            
+            // Re-scale axes
+            svg.select(".y.axis")
+                .call(yAxis.scale(new_yScale));
 
-                // re-draw line
-                plotLine = d3.line()
-                    .curve(d3.curveMonotoneX)
-                    .x(function (d) {
-                        return new_xScale(d.x);
-                    })
-                    .y(function (d) {
-                        return new_yScale(d.y);
-                    });
+            svg.select(".x.axis")
+                .call(xAxis.scale(new_xScale));
 
-                line.selectAll('path').attr("d", plotLine);
-                
-                d3.selectAll('circle')
-                  .attr("cx", function(d) {
+            // Re-draw line
+            plotLine = d3.line()
+                .curve(d3.curveMonotoneX)
+                .x(function (d) {
                     return new_xScale(d.x);
-                  })
-                  .attr("cy", function(d) {
+                })
+                .y(function (d) {
                     return new_yScale(d.y);
-                  });
+                });
+
+            line.selectAll('path').attr("d", plotLine);
+            
+            d3.selectAll('circle')
+              .attr("cx", function(d) {
+                return new_xScale(d.x);
+              })
+              .attr("cy", function(d) {
+                return new_yScale(d.y);
+              });
         }
     });
 
