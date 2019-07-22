@@ -1,0 +1,155 @@
+body {
+  font-family: Avenir;
+  margin: 45px;
+  margin-top: 35px;
+}
+
+h1 {
+  font-family: Superclarendon;
+  font-size: 28px;
+  margin: 25px;
+  width: 750px;
+}
+
+button {
+  border-radius: 8px;
+  border-color: black;
+  margin: 5px;
+  cursor: pointer;
+}
+
+button:focus {
+  outline: none;
+}
+
+select {
+  font-weight: normal;
+  border-radius: 5px;
+  background: white;
+  border-color: black;
+  margin: 5px;
+  cursor: pointer;
+}
+
+select:focus {
+  outline: none;
+}
+
+text {
+  font-family: Avenir;
+  font-size: 12px;
+}
+
+#group-container {
+  width: 750px;
+}
+
+#group-toolbar {
+  display: inline-block;
+  width: 708px;
+  border-radius: 10px;
+  background: #E5E5E5;
+  padding: 5px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-color: black;
+  border-style: solid;
+  border-width: 1px;
+  margin-left: -4px;
+  margin-right: 10px;
+  text-align: left;
+}
+
+.group {
+  padding: 0px;
+  padding-bottom: -20px;
+}
+
+.group-label {
+  margin-left: 22px;
+  margin-right: 22px;
+  font-weight: bold;
+}
+
+.group-select-label {
+  font-style: normal;
+  margin-left: 0px;
+  margin-right: 3px;
+}
+
+.group-select {
+  width: 140px;
+  margin-left: 3px;
+  margin-right: 20px;
+}
+
+.group-color {
+  display: inline-block;
+  height: 20px;
+  width: 20px;
+  border-radius: 20px;
+  background: blue;
+  opacity: 0.5;
+  margin-left: 5px;
+  margin-right: 20px;
+  margin-bottom: -5px;
+  border-color: white;
+  border-width: 2px;
+  border-style: solid;
+}
+
+#group-button {
+  font-size: 18px;
+  display: inline-block;
+  background: #E5E5E5;
+  padding-left: 9px;
+  padding-right: 9px;
+  margin-left: -2px;
+  margin-right: -5px;
+}
+
+#group-button:focus {
+  outline: none;
+  background: gray;
+  font-style: bold;
+}
+
+#data-toolbar {
+  width: 750px;
+  border-radius: 10px;
+  background: #E5E5E5;
+  padding: 5px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-color: black;
+  border-style: solid;
+  border-width: 1px;
+  text-align: left;
+}
+
+.data-label {
+  margin-left: 22px;
+  margin-right: 2px;
+  text-align: left;
+}
+
+.data-select {
+  font-size: 10px;
+  width: 280px;
+  margin-left: 3px;
+  margin-right: 3px;
+}
+
+.dot {
+  opacity: 0.65;
+}
+
+.tooltip {
+  font-family: Avenir;
+  padding: 5px;
+  padding-top: 2px;
+  padding-bottom: 1px;
+  background: #E5E5E5;
+  border-radius: 6px;
+  opacity: 0.35;
+}
