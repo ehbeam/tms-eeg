@@ -1,5 +1,5 @@
 
-var file = "data/random_data.csv";
+var file = "https://raw.githubusercontent.com/ehbeam/tms-eeg/master/data/random_data.csv";
 
 d3.csv(file, function(data){
 
