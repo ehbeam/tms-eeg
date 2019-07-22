@@ -1,0 +1,195 @@
+
+<!DOCTYPE html>
+
+<html>
+
+  <head>
+
+    <title>TMS-EEG Data Viewer</title>
+    
+    <link rel="stylesheet" type="text/css" href="style.css">
+    
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+    <style>
+
+      body {
+        font-family: Avenir;
+        margin: 50px;
+      }
+
+      h1 {
+        font-family: Superclarendon;
+        font-size: 28px;
+      }
+
+      button {
+        border-radius: 8px;
+        border-color: black;
+        margin: 5px;
+        cursor: pointer;
+      }
+
+      button:focus {
+        outline: none;
+      }
+
+      select {
+        font-weight: normal;
+        border-radius: 5px;
+        background: white;
+        border-color: black;
+        margin: 5px;
+        cursor: pointer;
+      }
+
+      select:focus {
+        outline: none;
+      }
+
+      #group-toolbar {
+        display: inline-block;
+        width: 703px;
+        border-radius: 10px;
+        background: #E5E5E5;
+        padding: 5px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        border-color: black;
+        border-style: solid;
+        border-width: 1px;
+        margin-right: 5px;
+      }
+
+      .group {
+        padding: 0px;
+        padding-bottom: -20px;
+        text-align: left;
+      }
+
+      .group-label {
+        margin-left: 20px;
+        margin-right: 20px;
+      }
+
+      .group-select-label {
+        font-style: normal;
+        margin-right: 3px;
+      }
+
+      .group-select {
+        width: 140px;
+        margin-left: 3px;
+        margin-right: 20px;
+      }
+
+      .group-color {
+        display: inline-block;
+        height: 24px;
+        width: 24px;
+        border-radius: 5px;
+        background: blue;
+        opacity: 0.5;
+        margin-left: 5px;
+        margin-right: 20px;
+        margin-bottom: -7px;
+      }
+
+      #group-button {
+        font-size: 18px;
+        display: inline-block;
+        background: #E5E5E5;
+        padding-left: 10px;
+        padding-right: 10px;
+        margin-right: -5px;
+      }
+
+      #group-button:focus {
+        outline: none;
+        background: gray;
+        font-style: bold;
+      }
+
+      #data-toolbar {
+        width: 750px;
+        border-radius: 10px;
+        background: #E5E5E5;
+        padding: 5px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        border-color: black;
+        border-style: solid;
+        border-width: 1px;
+      }
+
+      .data-select {
+        width: 280px;
+      }
+
+    </style>
+
+  </head>
+    
+  <body>
+        
+    <center>
+
+      <h1>TMS-EEG Data Viewer</h1><br/>
+
+      <div id="group-toolbar">
+        
+        <div class="group">
+          <label class="group-label">Group 1</label><span class="group-select-label">Project:</span><select id="project-1" class="group-select"></select><span class="group-select-label">Condition:</span><select id="condition-1" class="group-select"></select><span class="group-select-label">Color:</span><div class="group-color" id="color-1"></div><span><i>N</i> = 0</span>
+        </div>
+
+        <div class="group">
+          <label class="group-label">Group 1</label><span class="group-select-label">Project:</span><select id="project-1" class="group-select"></select><span class="group-select-label">Condition:</span><select id="condition-1" class="group-select"></select><span class="group-select-label">Color:</span><div class="group-color" id="color-1"></div><span><i>N</i> = 0</span>
+        </div>
+
+      </div>
+
+      <button id="group-button">+</button>
+      <br/><br/>
+
+      <div id="data-toolbar">
+        <label>X Data:</label><select class="data-select" id="x-data"></select>
+        <label>Y Data:</label><select class="data-select" id="y-data"></select>
+      </div>
+
+      <div id="plot"></div>
+
+    </center>
+
+  <!-- Modal -->
+    <div class="modal fade" id="myModal" role="dialog" data-keyboard="false" data-backdrop="static">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Deleting Point</h4>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to remove the point?</p>
+          </div>
+          <div class="modal-footer">
+                  <button id="btn-no-delete" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                  <button id="btn-yes-delete" type="button" class="btn btn-danger btn-ok">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+          
+    <script>
+
+    </script>
+
+
+  </body>
+
+</html>
