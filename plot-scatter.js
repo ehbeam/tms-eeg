@@ -1,4 +1,3 @@
-
 var file = "https://raw.githubusercontent.com/ehbeam/tms-eeg/master/data/random_data.csv";
 
 d3.csv(file, function(data){
@@ -116,7 +115,7 @@ d3.csv(file, function(data){
   d3.select("#condition-5").on("change", loadData);
       
   var zoom = d3.zoom().on('zoom', zoomed);
-   $('#myModal').modal('hide');
+  $('#myModal').modal('hide');
 
   var margin = {
     top: 20,
@@ -125,7 +124,7 @@ d3.csv(file, function(data){
     left: 78
   };
 
-  var width = 800 - margin.left - margin.right,
+  var width = 375 - margin.left - margin.right,
     height = 375 - margin.top - margin.bottom;
 
   var duration = 350;
@@ -158,7 +157,7 @@ d3.csv(file, function(data){
       .attr("class", "tooltip")       
       .style("opacity", 0);
 
-  var svg = d3.select("#plot").append("svg")
+  var svg = d3.select("#chart-scatter").append("svg")
      .attr("width", width + margin.left + margin.right)
      .attr("height", height + margin.top + margin.bottom);
 
@@ -176,7 +175,7 @@ d3.csv(file, function(data){
       .transition().duration(duration)
       .attr("id", "y-label")
       .attr("transform", "rotate(-90)")
-      .attr("y", 0 - margin.left + 107)
+      .attr("y", 0 - margin.left + 97)
       .attr("x", 0 - (height / 2) - margin.top)
       .attr("dy", "1em")
       .style("text-anchor", "middle")
@@ -372,7 +371,7 @@ d3.csv(file, function(data){
               return new_yScale(d.y);
           });
 
-      line.selectAll('path').attr("d", plotLine);
+      // line.selectAll('path').attr("d", plotLine);
       
       d3.selectAll('circle')
         .attr("cx", function(d) {

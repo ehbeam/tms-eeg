@@ -153,3 +153,21 @@ text {
   border-radius: 6px;
   opacity: 0.35;
 }
+
+#chart-container {
+  width: 850px;
+}
+
+#violin-container {
+  text-align: center;
+  display: inline;
+}
+
+.charts {
+  text-align: center;
+}
+
+.chart {
+  display: inline;
+}
+
