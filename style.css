@@ -1,14 +1,13 @@
 body {
   font-family: Avenir;
   margin: 45px;
-  margin-top: 35px;
+  margin-top: 30px;
 }
 
 h1 {
   font-family: Superclarendon;
   font-size: 28px;
-  margin: 25px;
-  width: 750px;
+  margin: 20px;
 }
 
 button {
@@ -154,20 +153,34 @@ text {
   opacity: 0.35;
 }
 
-#chart-container {
+#charts-container {
   width: 850px;
+  position: relative;
+  display: inline-block;
 }
 
-#violin-container {
+#chart-scatter {
   text-align: center;
-  display: inline;
+  position: absolute;
+  left: 14px;
 }
 
-.charts {
+#violins-container {
   text-align: center;
+  display: inline-block;
 }
 
-.chart {
-  display: inline;
+#chart-violin-y {
+  position: absolute; 
+  top: 0px;
+  right: 10px;
 }
+
+#chart-violin-x {
+  position: absolute; 
+  top: 195px;
+  bottom: 0px;
+  right: 10px;
+}
+
 
