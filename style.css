@@ -154,20 +154,21 @@ text {
 }
 
 #charts-container {
-  width: 900px;
+  width: 850px;
   position: relative;
   display: inline-block;
 }
 
 #chart-scatter {
   text-align: center;
+  display: inline;
   position: absolute;
   left: 14px;
 }
 
 #violins-container {
   text-align: center;
-  display: inline-block;
+  display: inline;
 }
 
 #chart-violin-y {
