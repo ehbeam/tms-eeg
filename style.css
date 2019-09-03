@@ -166,22 +166,10 @@ text {
   left: 14px;
 }
 
-#violins-container {
-  text-align: center;
-  display: inline;
-}
-
-#chart-violin-y {
+#chart-violin {
   position: absolute; 
   top: 0px;
+  left: 400px;
   right: 10px;
 }
-
-#chart-violin-x {
-  position: absolute; 
-  top: 195px;
-  bottom: 0px;
-  right: 10px;
-}
-
 

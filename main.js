@@ -108,8 +108,7 @@ d3.csv(file, function(data){
     if (dataXY[0].values.length > 0) {
       updateAxisLabels();
       updateScatter();
-      updateViolinY();
-      updateViolinX();
+      updateViolin();
     }
   }
 
@@ -129,11 +128,10 @@ d3.csv(file, function(data){
   d3.select("#condition-5").on("change", loadData);
   
   var zoom = d3.zoom().on('zoom', zoomed);
-  $('#myModal').modal('hide');
 
   var margin = {top: 20, right: 30, bottom: 50, left: 88};
 
-  var width = 440 - margin.left - margin.right,
+  var width = 430 - margin.left - margin.right,
     height = 395 - margin.top - margin.bottom;
 
   xExtent = findExtent(dataXY, 'x');
@@ -202,24 +200,8 @@ d3.csv(file, function(data){
     .style("opacity", 1)
     .style("fill", "white");
 
-  // svg.append("g")
-  //   .attr("class", "x axis ")
-  //   .attr('id', "axis--x")
-  //   .attr("transform", "translate(" + margin.left + "," + (height + margin.top) + ")")
-  //   .call(xAxis);
-
-  // svg.append("g")
-  //   .attr("class", "y axis")
-  //   .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-  //   .attr('id', "axis--y")
-  //   .call(yAxis);
-
   var dot = svg.append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-    
-  // zoomWindow.call(zoom);
-
-  // updateScatter();
 
   function findExtent(arr, prop) {
     var max = d3.max(arr, function(array) {
@@ -398,20 +380,19 @@ d3.csv(file, function(data){
 
 // Read the data and compute summary statistics for each species
 // Adapted from https://www.d3-graph-gallery.com/graph/violin_basicHist.html
-function updateViolinY() {
+function updateViolin() {
 
-  document.getElementById("chart-violin-y").innerHTML = "";
+  document.getElementById("chart-violin").innerHTML = "";
 
   d3.csv(file, function(data) {
 
-    // set the dimensions and margins of the graph
-    var margin = {top: 20, right: 50, bottom: 30, left: 50};
+    var margin = {top: 20, right: 30, bottom: 50, left: 88};
 
-    var width = 375 - margin.left - margin.right,
-      height = 190 - margin.top - margin.bottom;
+    var width = 430 - margin.left - margin.right,
+      height = 395 - margin.top - margin.bottom;
 
     // append the svg object to the body of the page
-    var svg = d3.select("#chart-violin-y")
+    var svg = d3.select("#chart-violin")
       .append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
@@ -421,121 +402,17 @@ function updateViolinY() {
 
     // Add y-axis label
     svg.append("text")
-        .attr("id", "y-label-violin-y")
+        .attr("id", "y-label-violin")
         .attr("transform", "rotate(-90)")
-        .attr("y", 0 - margin.left + 8)
+        .attr("y", 0 - margin.left + 35)
         .attr("x", 0 - (height / 2))
         .attr("dy", "1em")
         .style("text-anchor", "middle")
-        .style("font-size", "6px")
         .text(yVar); 
 
     // Build and show the Y scale
     var y = d3.scaleLinear()
       .domain(yExtent).nice()          // Note that here the Y scale is set manually
-      .range([height, 0])
-    svg.append("g")
-      .call( d3.axisLeft(y) )
-
-    // Build and show the X scale. It is a band scale like for a boxplot: each group has an dedicated RANGE on the axis. This range has a length of x.bandwidth
-    var x = d3.scaleBand()
-      .range([0, width])
-      .domain(groups)
-      .padding(0.05)     // This is important: it is the space between 2 groups. 0 means no padding. 1 is the maximum.
-    
-    svg.append("g")
-      .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x))
-    
-    // Features of the histogram
-    var histogram = d3.histogram()
-          .domain(y.domain())
-          .thresholds(y.ticks(20))    // Important: how many bins approx are going to be made? It is the 'resolution' of the violin plot
-          .value(d => d)
-    
-    // Compute the binning for each group of the dataset
-    var sumstat = d3.nest()  // nest function allows to group the calculation per level of a factor
-      .key(function(d) { return d.group;})
-      .rollup(function(d) {   // For each key..
-        input = d.map(function(g) { return parseFloat(g.y);})    // Keep the variable called Sepal_Length
-        bins = histogram(input)   // And compute the binning on it.
-        return(bins)
-      })
-      .entries(dataViolin)
-
-    // What is the biggest number of value in a bin? We need it cause this value will have a width of 100% of the bandwidth.
-    var maxNum = 0
-    for ( i in sumstat ){
-      allBins = sumstat[i].value
-      lengths = allBins.map(function(a){return a.length;})
-      longuest = d3.max(lengths)
-      if (longuest > maxNum) { maxNum = longuest }
-    }
-
-
-    // The maximum width of a violin must be x.bandwidth = the width dedicated to a group
-    var xNum = d3.scaleLinear()
-      .range([0, x.bandwidth()])
-      .domain([-maxNum, maxNum])
-
-    // Add the shape to this svg
-    svg
-      .selectAll("violin")
-      .data(sumstat)
-      .enter()        // So now we are working group per group
-      .append("g")
-        .attr("transform", function(d,i){ return("translate(" + x(d.key) +" ,0)"); }) // Translation on the right to be at the group position
-      .append("path")
-          .datum(function(d){ return(d.value)})     // So now we are working bin per bin
-          .style("stroke", "none")
-          .style("fill", function(d,i){ return(colors[i])})
-          .style("opacity", "0.65")
-          .attr("d", d3.area()
-              .x0(function(d){ return(xNum(-d.length)) } )
-              .x1(function(d){ return(xNum(d.length)) } )
-              .y(function(d){ return(y(d.x0)) } )
-              .curve(d3.curveCatmullRom)    // This makes the line smoother to give the violin appearance. Try d3.curveStep to see the difference
-          )
-
-  })
-
-};
-
-function updateViolinX() {
-
-  document.getElementById("chart-violin-x").innerHTML = "";
-
-  d3.csv(file, function(data) {
-
-    // set the dimensions and margins of the graph
-    var margin = {top: 15, right: 50, bottom: 40, left: 50};
-
-    var width = 375 - margin.left - margin.right,
-      height = 190 - margin.top - margin.bottom;
-
-    // append the svg object to the body of the page
-    var svg = d3.select("#chart-violin-x")
-      .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-        .attr("transform",
-              "translate(" + margin.left + "," + margin.top + ")");
-
-    // Add y-axis label
-    svg.append("text")
-        .attr("id", "y-label-violin-x")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 0 - margin.left + 8)
-        .attr("x", 0 - (height / 2))
-        .attr("dy", "1em")
-        .style("text-anchor", "middle")
-        .style("font-size", "6px")
-        .text(xVar); 
-
-    // Build and show the Y scale
-    var y = d3.scaleLinear()
-      .domain(xExtent).nice()          // Note that here the Y scale is set manually
       .range([height, 0])
     svg.append("g")
       .call( d3.axisLeft(y) )
@@ -599,6 +476,181 @@ function updateViolinX() {
               .y(function(d){ return(y(d.x0)) } )
               .curve(d3.curveCatmullRom)    // This makes the line smoother to give the violin appearance. Try d3.curveStep to see the difference
           )
+
+  var barWidth = 100 / nGroups;
+
+  // Load distributions for the Y variable
+  var groupCounts = {};
+  var globalCounts = [];
+  for (var i = 0; i < nGroups; i++) {
+    groupCounts[i+1] = [];
+  };
+  for (var i = 0; i < dataViolin.length; i++) {
+    var key = parseInt(dataViolin[i]["group"].split(" ")[1]);
+    var entry = parseFloat(dataViolin[i]["y"]);
+    groupCounts[key].push(entry);
+    globalCounts.push(entry);
+  }
+
+
+  // Sort group counts so quantile methods work
+  for(var key in groupCounts) {
+    var groupCount = groupCounts[key];
+    groupCounts[key] = groupCount.sort(sortNumber);
+  }
+
+  // Prepare the data for the box plots
+  var boxPlotData = [];
+  for (var [key, groupCount] of Object.entries(groupCounts)) {
+
+    if (groupCount.length > 0) {
+      var record = {};
+      var localMin = d3.min(groupCount);
+      var localMax = d3.max(groupCount);
+
+      record["key"] = key;
+      record["counts"] = groupCount;
+      record["quartile"] = boxQuartiles(groupCount);
+      record["whiskers"] = [localMin, localMax];
+      boxPlotData.push(record);
+    }
+  }
+
+  // Compute an ordinal xScale for the keys in boxPlotData
+  var xScale = d3.scalePoint()
+    .domain(Object.keys(groupCounts))
+    .rangeRound([0, width])
+    .padding([0.52]);
+
+  // Compute a global y scale based on the global counts
+  var min = d3.min(globalCounts);
+  var max = d3.max(globalCounts);
+  var yScale = d3.scaleLinear()
+    .domain([min, max])
+    .range([0, height]);
+
+  // Setup the group the box plot elements will render in
+  x_shift = -50 / nGroups;
+  var g = svg.append("g")
+    .attr("transform", "translate(" + x_shift + ",0)");
+
+  // Draw the box plot vertical lines
+  var verticalLines = g.selectAll(".verticalLines")
+    .data(boxPlotData)
+    .enter()
+    .append("line")
+    .attr("x1", function(datum) {
+        return xScale(datum.key) + barWidth/2;
+      }
+    )
+    .attr("y1", function(datum) {
+        var whisker = datum.whiskers[0];
+        return yScale(whisker);
+      }
+    )
+    .attr("x2", function(datum) {
+        return xScale(datum.key) + barWidth/2;
+      }
+    )
+    .attr("y2", function(datum) {
+        var whisker = datum.whiskers[1];
+        return yScale(whisker);
+      }
+    )
+    .attr("stroke", "#000")
+    .attr("stroke-width", 1)
+    .attr("fill", "white")
+    .attr("fill-opacity", "0.5");
+
+  // Draw the boxes of the box plot, filled in white and on top of vertical lines
+  var rects = g.selectAll("rect")
+    .data(boxPlotData)
+    .enter()
+    .append("rect")
+    .attr("width", barWidth)
+    .attr("height", function(datum) {
+        var quartiles = datum.quartile;
+        var height = yScale(quartiles[2]) - yScale(quartiles[0]);
+        return height;
+      }
+    )
+    .attr("x", function(datum) {
+        return xScale(datum.key);
+      }
+    )
+    .attr("y", function(datum) {
+        if (datum["counts"].length > 0) {
+          return yScale(datum.quartile[0]);
+        } 
+      }
+    )
+    .attr("fill", "white" )
+    .attr("fill-opacity", "0.5")
+    .attr("stroke", function(datum) {
+      if (datum["counts"].length > 0) {
+          return "#000";
+        } else { return "none" }
+    })
+    .attr("stroke-width", function(datum) {
+      if (datum["counts"].length > 0) {
+          return 1;
+        } else { return 0 }
+    });
+
+  // Now render all the horizontal lines at once - the whiskers and the median
+  var horizontalLineConfigs = [
+    // Top whisker
+    {
+      x1: function(datum) { return xScale(datum.key) },
+      y1: function(datum) { return yScale(datum.whiskers[0]) },
+      x2: function(datum) { return xScale(datum.key) + barWidth },
+      y2: function(datum) { return yScale(datum.whiskers[0]) }
+    },
+    // Median line
+    {
+      x1: function(datum) { return xScale(datum.key) },
+      y1: function(datum) { return yScale(datum.quartile[1]) },
+      x2: function(datum) { return xScale(datum.key) + barWidth },
+      y2: function(datum) { return yScale(datum.quartile[1]) }
+    },
+    // Bottom whisker
+    {
+      x1: function(datum) { return xScale(datum.key) },
+      y1: function(datum) { return yScale(datum.whiskers[1]) },
+      x2: function(datum) { return xScale(datum.key) + barWidth },
+      y2: function(datum) { return yScale(datum.whiskers[1]) }
+    }
+  ];
+
+  for (var i = 0; i < horizontalLineConfigs.length; i++) {
+    var lineConfig = horizontalLineConfigs[i];
+
+    // Draw the whiskers at the min for this series
+    var horizontalLine = g.selectAll(".whiskers")
+      .data(boxPlotData)
+      .enter()
+      .append("line")
+      .attr("x1", lineConfig.x1)
+      .attr("y1", lineConfig.y1)
+      .attr("x2", lineConfig.x2)
+      .attr("y2", lineConfig.y2)
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1)
+      .attr("fill", "none");
+  }
+
+  function boxQuartiles(d) {
+    return [
+      d3.quantile(d, .25),
+      d3.quantile(d, .5),
+      d3.quantile(d, .75)
+    ];
+  }
+    
+  // Perform a numeric sort on an array
+  function sortNumber(a,b) {
+    return a - b;
+  }
 
   })
 
