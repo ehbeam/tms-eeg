@@ -22,52 +22,66 @@
         
     <center>
 
-      <h1>TMS-EEG Viewer</h1>
+      <div id="title">
+        <h1>TMS-EEG Viewer</h1>
+      </div>
 
-      <div id="group-container">
+      <div class="toolbar" id="group-toolbar">
 
-        <div id="group-toolbar">
+        <div id="group-var">
+          <label class="data-label">Grouping Variable</label>
+          <select id="group-select"></select>
+          <label class="n-label"><i>N</i> Groups:&nbsp;</label>
+          <span id="n-groups">2</span>
+          <input type="range" id="n-group-slider" class="slider" min="1" max="10" value="2"></input>
+          <button class="update-button" id="update-group-button">Update</button>
+        </div>
         
-          <div class="group" id="group-1" style="display:none;">
-            <span class="group-label">Group 1</span><span class="group-select-label">Project:</span><select id="project-1" class="group-select"></select><span class="group-select-label">Condition:</span><select id="condition-1" class="group-select"></select><span class="group-select-label">Color:</span><div class="group-color" id="color-1"></div><span id="n-1"><i>N</i> = 0</span>
-          </div>
+        <div id="group-list"></div>
 
-          <div class="group" id="group-2" style="display:none;">
-            <span class="group-label">Group 2</span><span class="group-select-label">Project:</span><select id="project-2" class="group-select"></select><span class="group-select-label">Condition:</span><select id="condition-2" class="group-select"></select><span class="group-select-label">Color:</span><div class="group-color" id="color-2"></div><span id="n-2"><i>N</i> = 0</span>
-          </div>
+      </div><br/>
 
-          <div class="group" id="group-3" style="display:none;">
-            <span class="group-label">Group 3</span><span class="group-select-label">Project:</span><select id="project-3" class="group-select"></select><span class="group-select-label">Condition:</span><select id="condition-3" class="group-select"></select><span class="group-select-label">Color:</span><div class="group-color" id="color-3"></div><span id="n-3"><i>N</i> = 0</span>
-          </div>
+      
+      <div id="plot-container">
 
-          <div class="group" id="group-4" style="display:none;">
-            <span class="group-label">Group 4</span><span class="group-select-label">Project:</span><select id="project-4" class="group-select"></select><span class="group-select-label">Condition:</span><select id="condition-4" class="group-select"></select><span class="group-select-label">Color:</span><div class="group-color" id="color-4"></div><span id="n-4"><i>N</i> = 0</span>
-          </div>
+        <div class="toolbar">
 
-          <div class="group" id="group-5" style="display:none;">
-            <span class="group-label">Group 5</span><span class="group-select-label">Project:</span><select id="project-5" class="group-select"></select><span class="group-select-label">Condition:</span><select id="condition-5" class="group-select"></select><span class="group-select-label">Color:</span><div class="group-color" id="color-5"></div><span id="n-5"><i>N</i> = 0</span>
-          </div>
+          <label class="data-label">Plotting Variable</label>
+
+          <select class="plot-select" id="y-data-1"></select>
+          <!-- <select class="plot-select hidden-select" id="y-data-2"></select>
+          <select class="plot-select hidden-select" id="y-data-3"></select>
+          <select class="plot-select hidden-select" id="y-data-4"></select>
+          <select class="plot-select hidden-select" id="y-data-5"></select>
+
+          <button class="plot-button" id="del-plot-button">&ndash;</button>
+          <button class="plot-button" id="add-plot-button">+</button> -->
+
+          <button class="update-button" id="update-plot-button">Plot</button>
 
         </div>
 
-        <button id="group-button">+</button><br/><br/>
+      </div>
+
+      <div id="charts-container">
+
+        <div id="chart-scatter"></div>
+        <div id="chart-violin"></div>
 
       </div>
 
-      <div id="data-toolbar">
+      <div id="footer">
 
-        <label class="data-label">X Data:</label><select class="data-select" id="x-data"></select>
-        
-        <label class="data-label">Y Data:</label><select class="data-select" id="y-data"></select>
+        <div id="print-div">
+          <img id="print-icon" src="https://icons-for-free.com/iconfiles/png/512/printer+icon+printer+line+icon+icon-1320073121186258180.png" onclick="window.print()"/>
+        </div><br/><br/>
+
+        &copy; <a href="https://profiles.stanford.edu/elizabeth-beam" target="_blank">Ellie Beam</a>&nbsp;&nbsp;<b>|</b>&nbsp;&nbsp;<a href="https://www.etkinlab.stanford.edu" target="_blank">Lab of Professor Amit Etkin</a>&nbsp;&nbsp;<b>|</b>&nbsp;&nbsp;<a href="https://www.stanford.edu" target="_blank">Stanford University</a><br/><br/><br/>
       
       </div><br/>
 
-      <div id="charts-container">
-        <div id="chart-scatter"></div>
-        <div id="chart-violin"></div>
-      </div>
+      </center>
 
-    </center>
 
   </body>
 

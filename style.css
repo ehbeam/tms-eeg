@@ -2,12 +2,29 @@ body {
   font-family: Avenir;
   margin: 45px;
   margin-top: 30px;
+  padding-bottom: 30px;
 }
 
 h1 {
-  font-family: Superclarendon;
+  font-family: Avenir;
+  font-weight: bold;
   font-size: 28px;
-  margin: 20px;
+  margin: 28px;
+}
+
+a {
+  color: black;
+}
+
+a:hover {
+  color: black;
+  text-decoration: none;
+  opacity: 0.7;
+}
+
+a:focus {
+  color: black;
+  text-decoration: none;
 }
 
 button {
@@ -34,18 +51,62 @@ select:focus {
   outline: none;
 }
 
+select:hover {
+  opacity: 0.7;
+}
+
 text {
   font-family: Avenir;
   font-size: 12px;
 }
 
-#group-container {
-  width: 750px;
+.slider {
+  display: inline-block;
+  vertical-align: middle;
+  -webkit-appearance: none;
+  height: 13px;
+  background: white;
+  outline: none;
+  opacity: 1;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+  border-color: black;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
-#group-toolbar {
-  display: inline-block;
-  width: 708px;
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  background: gray;
+  cursor: pointer;
+  border-color: black;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 5px;
+}
+
+.slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  background: gray;
+  cursor: pointer;
+}
+
+.slider:hover {
+  opacity:0.7;
+}
+
+#title {
+  width: 800px;
+}
+
+.toolbar {
+  width: 800px;
   border-radius: 10px;
   background: #E5E5E5;
   padding: 5px;
@@ -54,32 +115,88 @@ text {
   border-color: black;
   border-style: solid;
   border-width: 1px;
-  margin-left: -4px;
-  margin-right: 10px;
   text-align: left;
+  margin-bottom: 3px;
+}
+
+.data-label {
+  width: 120px;
+  margin-left: 15px;
+  margin-right: 5px;
+  margin-top: 6px;
+  margin-bottom: 6px;
+  text-align: middle;
+  vertical-align: middle;
+  display: inline-block;
+}
+
+#group-select {
+  font-size: 12px;
+  width: 310px;
+  margin-right: 6px;
+  vertical-align: middle;
+  display: inline-block;
+}
+
+#n-group-range {
+  vertical-align: middle;
+  display: inline-block;
+  width: 42px;
+  margin-left: 3px;
+  margin-right: 0px;
+}
+
+.n-label {
+  margin-left: 14px;
+  margin-right: 7px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  text-align: left;
+  vertical-align: middle;
+  display: inline-block;
+}
+
+#n-groups {
+  width: 18px;
+  margin-left: -10px;
+  margin-right: 8px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  text-align: center;
+  vertical-align: middle;
+  display: inline-block;
+}
+
+#n-group-slider {
+  width: 97px;
+  display: inline;
+  margin-right: 15px;
+}
+
+.update-button {
+  height: 30px;
+  width: 70px;
+  font-weight: bold;
+  vertical-align: middle;
+  display: inline-block;
+  padding-top: 4px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  margin-left: 0px;
+}
+
+.update-button:hover {
+  opacity: 0.7;
+}
+
+.group-toolbar {
+  margin-top: 0px;
+  margin-bottom: 0px;
 }
 
 .group {
   padding: 0px;
   padding-bottom: -20px;
-}
-
-.group-label {
-  margin-left: 22px;
-  margin-right: 22px;
-  font-weight: bold;
-}
-
-.group-select-label {
-  font-style: normal;
-  margin-left: 0px;
-  margin-right: 3px;
-}
-
-.group-select {
-  width: 140px;
-  margin-left: 3px;
-  margin-right: 20px;
 }
 
 .group-color {
@@ -89,7 +206,7 @@ text {
   border-radius: 20px;
   background: blue;
   opacity: 0.5;
-  margin-left: 5px;
+  margin-left: 147px;
   margin-right: 20px;
   margin-bottom: -5px;
   border-color: white;
@@ -97,46 +214,120 @@ text {
   border-style: solid;
 }
 
-#group-button {
-  font-size: 18px;
-  display: inline-block;
-  background: #E5E5E5;
-  padding-left: 9px;
-  padding-right: 9px;
-  margin-left: -2px;
-  margin-right: -5px;
+.group-label {
+  font-weight: bold;
+  margin-right: 8px;
 }
 
-#group-button:focus {
-  outline: none;
-  background: gray;
-  font-style: bold;
+.group-select-label {
+  font-style: normal;
+  margin-left: 0px;
+  margin-right: 4px;
 }
 
-#data-toolbar {
-  width: 750px;
-  border-radius: 10px;
-  background: #E5E5E5;
-  padding: 5px;
-  padding-top: 10px;
-  padding-bottom: 10px;
-  border-color: black;
-  border-style: solid;
-  border-width: 1px;
-  text-align: left;
+.group-val-select {
+  font-size: 12px;
+  width: 380px;
+  margin-left: 0px;
+  margin-right: 20px;
 }
 
-.data-label {
-  margin-left: 22px;
-  margin-right: 2px;
-  text-align: left;
-}
-
-.data-select {
-  font-size: 10px;
-  width: 280px;
-  margin-left: 3px;
+.group-val-slider-label {
   margin-right: 3px;
+}
+
+.group-val-slider {
+  width: 60px;
+  height: 15px;
+  vertical-align: middle;
+  display: inline-block;
+  margin-left: 3px;
+  margin-right: 0px;
+}
+
+.group-val-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 20px;
+  background: gray;
+  cursor: pointer;
+  border-color: black;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 5px;
+}
+
+.group-val-slider::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  background: gray;
+  cursor: pointer;
+}
+
+.group-val-slider:hover {
+  opacity:0.7;
+}
+
+.group-minmax {
+  font-size: 10px;
+  margin-right: 6px;
+  width: 15px;
+}
+
+.plot-select {
+  font-size: 12px;
+  /*width: 446px;*/
+  width: 536px;
+  margin-top: 6px;
+  margin-bottom: 6px;
+  margin-left: 3px;
+  /*margin-right: 22px;*/
+  margin-right: -1px;
+  vertical-align: middle;
+}
+
+.plot-select-row {
+  height: 35px;
+}
+
+.hidden-select {
+  margin-left: 146px;
+  margin-top: 6px;
+  margin-bottom: 6px;
+  display: none;
+}
+
+#update-plot-button {
+  margin-left: 16px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+#plot-container {
+  width: 800px;
+}
+
+.plot-button {
+  width: 25px;
+  height: 25px;
+  font-size: 13px;
+  font-weight: bold;
+  display: inline-block;
+  background: white;
+  padding-top: 3px;
+  padding-left: 7px;
+  padding-right: 7px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  margin-left: 2px;
+  margin-right: 2px;
+  vertical-align: middle;
+}
+
+#del-plot-button {
+  cursor: default;
+  background: #CCCCCC;
 }
 
 .dot {
@@ -154,22 +345,45 @@ text {
 }
 
 #charts-container {
-  width: 850px;
+  width: 800px;
   position: relative;
   display: inline-block;
 }
 
 #chart-scatter {
   text-align: center;
-  display: inline;
+  display: inline-block;
   position: absolute;
-  left: 14px;
+  left: 0px;
 }
 
 #chart-violin {
   position: absolute; 
   top: 0px;
   left: 400px;
-  right: 10px;
+  right: 20px;
+}
+
+#footer {
+  position: relative;
+  top: 35px;
+  font-size: 10px;
+  height: 20px;
+  width: 800px;
+}
+
+#print-div {
+  width: 800px;
+}
+
+#print-icon {
+  height: 35px;
+  position: relative;
+  top: 15px;
+  cursor: pointer;
+}
+
+#print-icon:hover {
+  opacity: 0.7;
 }
 

@@ -2,24 +2,56 @@
 var file = "https://raw.githubusercontent.com/ehbeam/tms-eeg/master/data/random_data.csv";
 
 var dataXY = []; var dataViolin = [];
-var nGroups = 0; var groups = ["Group 1"];
+var nGroups = 2; var groups = [1]; var checkNum = false;
+var groupVar = ""; var groupVarVals = []; var groupVals = []; var groupVarLab = "";
+var nPlots = 1;
 var yExtent = []; var xExtent = [];
 var xVar = ""; var yVar = "";
 var yScale, xScale;
+var dataUpdated = false;
 
 // Set color scale
 var palette = d3.scaleOrdinal(d3.schemeCategory10);
 var colors = [];
-for (var i = 0; i < 5; i++) { colors.push(palette(i)) };
+for (var i = 0; i < 10; i++) { colors.push(palette(i)) };
 
 var duration = 0;
 
 d3.csv(file, function(data){
 
+  function updateNGroupVal() {
+    nGroups = document.getElementById("n-group-slider").value;
+    document.getElementById("n-groups").innerHTML = nGroups;
+  }
+
+  nGroups = document.getElementById("n-group-slider").value; 
+  d3.select("#update-group-button").on("click", updateNGroupVal);
+
+  // Remove white space from data keys
+  var newData = [];
+  for (var i = 0; i < data.length; i++) {
+    var newRow = {};
+    for (var key in data[i]) {
+      newKey = key.trim();
+      newRow[newKey] = data[i][key].trim()
+    }
+    newData.push(newRow)
+  }
+  data = newData;
+
   var vars = Object.keys(data[0]);
-  var categoricalVars = ["Project", " Subject", " Condition"];
+
+  // Determine which variables are categorical
+  var categoricalVars = [];
+  for (var i = 0; i < vars.length; i++) {
+    if (!(parseFloat(data[0][vars[i]]))) {
+      categoricalVars.push(vars[i])
+    }
+  }
+
   var continuousVars = [""].concat(vars.filter(v => !categoricalVars.includes(v)));
-  var varIDs = ["x-data", "y-data"];
+  // var varIDs = ["group-select", "y-data-1", "y-data-2", "y-data-3", "y-data-4", "y-data-5"];
+  var varIDs = ["group-select", "y-data-1"];
 
   function loadSelect(id, text) {
     var select = document.getElementById(id);
@@ -28,9 +60,14 @@ d3.csv(file, function(data){
     select.add(option);
   }
 
+  for (var i = 0; i < vars.length + 1; i++) {
+    loadSelect("group-select", [""].concat(vars)[i])
+  }
+
   for (var i = 0; i < continuousVars.length; i++) {
-    for (var j = 0; j < varIDs.length; j++) {
-      loadSelect(varIDs[j], continuousVars[i])
+    // for (var j = 1; j < 6; j++) {
+    for (var j = 1; j < 2; j++) {
+      loadSelect("y-data-" + j, continuousVars[i])
     }
   }
 
@@ -42,107 +79,428 @@ d3.csv(file, function(data){
     return unique;
   }
 
-  var projects = [""]; var conditions = [""];
-  for (var i = 0; i < data.length; i++) {
-    projects.push(data[i]["Project"])
-    conditions.push(data[i][" Condition"])
+  function dimAdd() {
+    document.getElementById("add-plot-button").style.opacity = "0.7";
   }
-  projects = extractUnique(projects);
-  conditions = extractUnique(conditions);
-
-  for (var i = 1; i < 6; i++) {
-    for (var j = 0; j < projects.length; j++) {
-      loadSelect("project-" + i, projects[j])
-    }
-    for (var k = 0; k < conditions.length; k++) {
-      loadSelect("condition-" + i, conditions[k])
-    }
+  
+  function brightAdd() {
+    document.getElementById("add-plot-button").style.opacity = "1";
   }
 
-  function addGroup() {
-    if (nGroups < 5) {
-      nGroups = nGroups + 1;
-      document.getElementById("group-" + nGroups).style.display = "inline-block";
-      document.getElementById("color-" + nGroups).style.background = colors[nGroups-1];
+  function dimDel() {
+    document.getElementById("del-plot-button").style.opacity = "0.7";
+  }
+
+  function brightDel() {
+    document.getElementById("del-plot-button").style.opacity = "1";
+  }
+
+  function updatePlotButtons() {
+    if (nPlots == 1) { 
+      document.getElementById("del-plot-button").style.background = "#CCCCCC";
+      document.getElementById("del-plot-button").style.cursor = "default";
+      d3.select("#del-plot-button").on("mouseover", brightDel)
+      d3.select("#add-plot-button").on("mouseover", dimAdd)
+      d3.select("#add-plot-button").on("mouseout", brightAdd)
+    }
+    if ((nPlots > 1) & (nPlots < 5)) {
+      document.getElementById("del-plot-button").style.background = "white";
+      document.getElementById("del-plot-button").style.cursor = "pointer";
+      document.getElementById("add-plot-button").style.background = "white";
+      document.getElementById("add-plot-button").style.cursor = "pointer";
+      d3.select("#add-plot-button").on("mouseover", dimAdd)
+      d3.select("#add-plot-button").on("mouseout", brightAdd)
+      d3.select("#del-plot-button").on("mouseover", dimDel)
+      d3.select("#del-plot-button").on("mouseout", brightDel)
+    }
+    if (nPlots == 5) { 
+      document.getElementById("add-plot-button").style.background = "#CCCCCC";
+      document.getElementById("add-plot-button").style.cursor = "default";
+      d3.select("#add-plot-button").on("mouseover", brightAdd)
+      d3.select("#del-plot-button").on("mouseover", dimDel)
+      d3.select("#del-plot-button").on("mouseout", brightDel)
     }
   }
 
-  addGroup();
-  d3.select("#group-button").on("click", addGroup)
+  // updatePlotButtons();
+
+  function delPlot() {
+    if (nPlots > 1) {
+      document.getElementById("y-data-" + nPlots).style.display = "none";
+      nPlots = nPlots - 1;
+    } 
+    updatePlotButtons();
+  }
+
+  function addPlot() {
+    if (nPlots < 5) {
+      nPlots = nPlots + 1;
+      document.getElementById("y-data-" + nPlots).style.display = "inline-block";
+    } 
+    updatePlotButtons();
+  }
+
+  d3.select("#del-plot-button").on("click", delPlot)
+  d3.select("#add-plot-button").on("click", addPlot)
+
+  function loadGroupVals(groupVar) {
+    isNum = false;
+    var groupVarVals = [];
+    for (var i = 0; i < data.length; i++) {
+      var val = data[i][groupVar];
+      if (parseFloat(val)) {
+        isNum = true;
+        val = parseFloat(val);
+      }
+      if (!(typeof val == "undefined")) { groupVarVals.push(val) }
+    }
+    return extractUnique(groupVarVals);
+  }
+
+  function updateNGroups() {
+    nGroups = document.getElementById("n-group-slider").value;
+    document.getElementById("n-groups").innerHTML = nGroups;
+  }
+
+  d3.select("#n-group-slider").on("input", updateNGroups);  
 
   function updateAxisLabels() {
 
-    var xEl = document.getElementById("x-data");
+    var xEl = document.getElementById("group-select");
     var xVar = xEl.options[xEl.selectedIndex].value;
-    d3.selectAll("#x-label").text(xVar);
+    d3.selectAll("#x-label").text(groupVarLab);
     
-    var yEl = document.getElementById("y-data");
+    var yEl = document.getElementById("y-data-1");
     var yVar = yEl.options[yEl.selectedIndex].value;
     d3.selectAll("#y-label").text(yVar);
 
   }
 
-  function loadData() {
-    xVar = " " + d3.select("#x-data").node().value;
-    yVar = " " + d3.select("#y-data").node().value;
-    dataViolin = []; var v = 0;
-    for (var group = 1; group < nGroups + 1; group++) {
-      var project = d3.select("#project-" + group).node().value; 
-      var condition = " " + d3.select("#condition-" + group).node().value;
-      var values = []; var n = 0;
-      for (var i = 0; i < data.length; i++) {
-        if ((data[i]["Project"] == project) & (data[i][" Condition"] == condition)) {
+  function computeNSubjects(group, groupVar, groupVarVal) {
+
+    var selIdx = 0;
+    if (group < groupVarVals.length + 1) { selIdx = group };
+    var groupVarVal = groupVarVals[selIdx-1];
+
+    var n = 0;
+      for (var j = 0; j < data.length; j++) {
+        if (data[j][groupVar] == groupVarVal) {
           n = n + 1;
-          if ((typeof data[i][xVar] !== "undefined") & (typeof data[i][yVar] !== "undefined")) {
-            values.push({ x: data[i][xVar], y: data[i][yVar], row: i });
-            dataViolin.push({group: "Group " + group, color: colors[group],
-                             x: data[i][xVar], y: data[i][yVar]});
-          }
         }
-      }
-      document.getElementById("n-" + group).innerHTML = "<i>N</i> = " + n;
-      dataXY[group-1] = { key: "group-" + group, values: values };
-    }
-    groups = [];
-    for (var i = 1; i <= nGroups; i++) { groups.push("Group " + i) };
-    if (dataXY[0].values.length > 0) {
-      updateAxisLabels();
-      updateScatter();
-      updateViolin();
+      } 
+
+    return n;
+  }
+
+  function updateNSubjects() {
+    var groupVar = document.getElementById("group-select").value;
+    for (var i = 0; i < nGroups; i++) {
+      var group = i + 1;
+      var selVar = document.getElementById("group-val-select-" + group).value;
+      var n = 0;
+      for (var j = 0; j < data.length; j++) {
+        if (data[j][groupVar] == selVar) {
+          n = n + 1;
+        }
+      } 
+      document.getElementById("n-" + group).innerHTML = "<b><i>N</i> Subjects:</b>&nbsp;&nbsp;" + n;
     }
   }
 
-  d3.select("#x-data").on("change", loadData);
-  d3.select("#y-data").on("change", loadData);
+  function updateNSubjectsRange() {
+    var groupVar = document.getElementById("group-select").value;
+    for (var i = 0; i < nGroups; i++) {
+      var group = i + 1;
+      var groupMin = document.getElementById("group-min-slider-" + group).value;
+      var groupMax = document.getElementById("group-max-slider-" + group).value;
+      var n = 0;
+      for (var j = 0; j < data.length; j++) {
+        if ((data[j][groupVar] > groupMin) & (data[j][groupVar] < groupMax)) {
+          n = n + 1;
+        }
+      } 
+      document.getElementById("n-" + group).innerHTML = "<b><i>N</i> Subjects:</b>&nbsp;&nbsp;" + n;
+    }
+  }
 
-  d3.select("#project-1").on("change", loadData);
-  d3.select("#project-2").on("change", loadData);
-  d3.select("#project-3").on("change", loadData);
-  d3.select("#project-4").on("change", loadData);
-  d3.select("#project-5").on("change", loadData);
+  function updateCategoricalSelection() {
+    
+    updateNSubjects();
 
-  d3.select("#condition-1").on("change", loadData);
-  d3.select("#condition-2").on("change", loadData);
-  d3.select("#condition-3").on("change", loadData);
-  d3.select("#condition-4").on("change", loadData);
-  d3.select("#condition-5").on("change", loadData);
-  
-  var zoom = d3.zoom().on('zoom', zoomed);
+    dataViolin = []; dataXY = [];
+    for (var i = 0; i < nGroups; i++) {
 
-  var margin = {top: 20, right: 30, bottom: 50, left: 88};
+      var group = i + 1; values = [];
+      var groupVal = document.getElementById("group-val-select-" + group).value;
 
-  var width = 430 - margin.left - margin.right,
-    height = 395 - margin.top - margin.bottom;
+      for (var k = 0; k < data.length; k++) {
+        if (data[k][groupVar] == groupVal) {
+          var yVal = data[k][yVar];
+          values.push({ x: k, y: parseFloat(yVal), row: k });
+          dataViolin.push({ group: group, color: colors[group], x: group, y: yVal });
+        }
+      }
+      dataXY[i] = { key: "group-" + group, values: values };
+    }
+
+    dataUpdated = true;
+  }
+
+  function updateCategorical() {
+
+    nGroups = document.getElementById("n-group-slider").value;
+    groupVar = document.getElementById("group-select").value;
+    yVar = document.getElementById("y-data-1").value;
+    groupVarVals = loadGroupVals(groupVar);
+    groupVarLab = "Row";
+    dataUpdated = false;
+
+    var groupHTML = "";
+    for (var i = 0; i < nGroups; i++) {
+      var group = i + 1;
+      var n = computeNSubjects(group, groupVar, groupVarVals);
+      groupHTML = groupHTML + "<div class='group-toolbar' id='group-toolbar-" + group + "'><div class='group-color' id='color-" + group + "' style='background:" + colors[i] + ";'></div><label class='group-label' style='width:65px;'>Group " + group + "</label><select class='group-val-select' id='group-val-select-" + group + "'>" + groupVals[i] + "</select><span id='n-" + group + "'><b><i>N</i> Subjects:</b>&nbsp;&nbsp;" + n + "</span></div>";
+    }
+    
+    document.getElementById("group-list").innerHTML = groupHTML;
+
+    dataViolin = []; dataXY = [];
+    for (var i = 0; i < nGroups; i++) {
+
+      var group = i + 1; values = [];
+      for (var j = 0; j < groupVarVals.length + 1; j++) {
+        loadSelect("group-val-select-" + group, [""].concat(groupVarVals)[j]);
+      }
+
+      var selIdx = 0;
+      if (i < (groupVarVals.length + 1)) { selIdx = group };
+      document.getElementById("group-val-select-" + group).selectedIndex = selIdx;
+
+      d3.select("#group-val-select-" + group).on("change", updateCategoricalSelection);
+
+      for (var k = 0; k < data.length; k++) {
+        if (data[k][groupVar] == groupVarVals[selIdx-1]) {
+          var yVal = data[k][yVar];
+          values.push({ x: k, y: parseFloat(yVal), row: k });
+          dataViolin.push({ group: group, color: colors[group], x: group, y: yVal });
+        }
+      }
+      dataXY[i] = { key: "group-" + group, values: values };
+    }
+
+    document.getElementById("group-toolbar-1").style["margin-top"] = "9px";
+    document.getElementById("group-toolbar-" + nGroups).style["margin-bottom"] = "5px";
+
+    groups = [];
+    for (var i = 1; i <= nGroups; i++) { 
+      groups.push(i);
+    };
+
+    d3.select("#plot-select").on("change", updateCategoricalSelection);
+
+  }
+
+  function updateMin() {
+    for (var i = 0; i < nGroups; i++) {
+      var group = i + 1;
+      val = document.getElementById("group-min-slider-" + group).value;
+      document.getElementById("group-min-" + group).innerHTML = parseFloat(val).toFixed(2);
+    }
+  }
+
+  function updateMax() {
+    for (var i = 0; i < nGroups; i++) {
+      var group = i + 1;
+      val = document.getElementById("group-max-slider-" + group).value;
+      document.getElementById("group-max-" + group).innerHTML = parseFloat(val).toFixed(2);
+    }
+  }
+
+  function updateNumericalSelection() {
+
+    updateNSubjectsRange();
+    updateMin();
+    updateMax();
+
+    var yVar = document.getElementById("y-data-1").value;
+
+    dataViolin = []; dataXY = [];
+    for (var i = 0; i < nGroups; i++) {
+
+      var group = i + 1; 
+      var groupMin = document.getElementById("group-min-slider-" + group).value;
+      var groupMax = document.getElementById("group-max-slider-" + group).value;
+
+      values = [];
+      for (var k = 0; k < data.length; k++) {
+        var xVal = data[k][groupVar];
+        if ((xVal > groupMin) & (xVal < groupMax)) {
+          var yVal = data[k][yVar];
+          values.push({ x: xVal, y: parseFloat(yVal), row: k });
+          dataViolin.push({ group: group, color: colors[group], x: xVal, y: yVal });
+        }
+      }
+      dataXY[i] = { key: "group-" + group, values: values };
+    }
+
+    dataUpdated = true;
+  }
+
+  function updateNumerical() {
+
+    nGroups = document.getElementById("n-group-slider").value;
+    groupVar = document.getElementById("group-select").value;
+    yVar = document.getElementById("y-data-1").value;
+    groupVarVals = loadGroupVals(groupVar);
+    groupVarLab = groupVar;
+    dataUpdated = false;
+
+    var minVal = Math.min.apply(Math, groupVarVals).toFixed(2);
+    var maxVal = Math.max.apply(Math, groupVarVals).toFixed(2);
+    var step = (maxVal - minVal) / 100;
+    var thres = (maxVal - minVal) / parseFloat(nGroups);
+    
+    var groupHTML = "";
+    for (var i = 0; i < nGroups; i++) {
+      var group = i + 1;
+      var n = 1;
+      groupHTML = groupHTML + "<div class='group-toolbar' id='group-toolbar-" + group + "'><div class='group-color' id='color-" + group + "' style='background:" + colors[i] + ";'></div><label class='group-label' style='width:65px;'>Group " + group + "</label><span class='group-val-slider-label'><b>Min: </b></span><div class='group-minmax' id='group-min-" + group + "'>" + minVal + "</div><input type='range' class='slider' id='group-min-slider-" + group + "' min='" + minVal + "' max='" + maxVal + "' step='" + step + "' value='" + minVal + "'></input><span class='group-val-slider-label'><b>Max: </b></span><div class='group-minmax' id='group-max-" + group + "'>" + maxVal + "</div><input type='range' class='slider' id='group-max-slider-" + group + "' min='" + minVal + "' max='" + maxVal + "' step='" + step + "' value='" + maxVal + "'></input><span id='n-" + group + "'><b><i>N</i> Subjects:</b>&nbsp;&nbsp;" + n + "</span></div>";
+    }
+
+    document.getElementById("group-list").innerHTML = groupHTML;
+
+    var floor = minVal; dataViolin = []; dataXY = [];
+    for (var i = 0; i < nGroups; i++) {
+
+      var group = i + 1; 
+
+      var groupMin = floor;
+      document.getElementById("group-min-slider-" + group).value = groupMin;
+      document.getElementById("group-min-" + group).innerHTML = parseFloat(groupMin).toFixed(2);
+      floor = parseFloat(floor) + parseFloat(thres);
+
+      var groupMax = floor;
+      document.getElementById("group-max-slider-" + group).value = groupMax;
+      document.getElementById("group-max-" + group).innerHTML = parseFloat(groupMax).toFixed(2);
+
+      ["min", "max"].forEach(function (item, index) {
+
+        document.getElementById("group-" + item + "-slider-" + group).style["width"] = "92px";
+        document.getElementById("group-" + item + "-slider-" + group).style["height"] = "13px";
+        document.getElementById("group-" + item + "-slider-" + group).style["vertical-align"] = "middle";
+        document.getElementById("group-" + item + "-slider-" + group).style["display"] = "inline-block";
+        document.getElementById("group-" + item + "-slider-" + group).style["margin-left"] = "6px";
+        document.getElementById("group-" + item + "-slider-" + group).style["margin-right"] = "23px";
+        document.getElementById("group-" + item + "-" + group).style["width"] = "37px";
+        document.getElementById("group-" + item + "-" + group).style["display"] = "inline-block";
+        document.getElementById("group-" + item + "-" + group).style["font-size"] = "12px";
+        document.getElementById("group-" + item + "-" + group).style["text-align"] = "center";
+
+        d3.select("#group-" + item + "-slider-" + group).on("input", updateNumericalSelection);
+
+      });
+            
+      document.getElementById("group-toolbar-" + group).style["margin-top"] = "6px";
+      document.getElementById("group-toolbar-" + group).style["margin-bottom"] = "6px";
+
+      values = [];
+      for (var k = 0; k < data.length; k++) {
+        var xVal = data[k][groupVar];
+        if ((xVal > groupMin) & (xVal < groupMax)) {
+          var yVal = data[k][yVar];
+          values.push({ x: xVal, y: parseFloat(yVal), row: k });
+          dataViolin.push({ group: group, color: colors[group], x: xVal, y: yVal });
+        }
+      }
+      dataXY[i] = { key: "group-" + group, values: values };
+      
+    }
+
+    document.getElementById("group-toolbar-1").style["margin-top"] = "9px";
+    document.getElementById("group-toolbar-" + nGroups).style["margin-bottom"] = "5px";
+
+    updateNSubjectsRange();
+
+    groups = [];
+    for (var i = 1; i <= nGroups; i++) { 
+      groups.push(i);
+    };
+
+    d3.select("#plot-select").on("change", updateNumericalSelection);
+    
+  }
+
+  function loadData() {
+
+    var groupVar = document.getElementById("group-select").value;
+    var checkNum = false;
+
+    for (var i = 0; i < data.length; i++) {
+      var val = data[i][groupVar];
+      if (parseFloat(val)) {
+        checkNum = true;
+      }
+    }
+    
+    if (checkNum == false) {
+      d3.select("#update-group-button").on("click", updateCategorical);
+      if (!(dataUpdated)) { updateCategorical() };
+    } else {
+      d3.select("#update-group-button").on("click", updateNumerical);
+      if (!(dataUpdated)) { updateNumerical() };
+    }
+  }
+
+  d3.select("#group-select").on("change", loadData);
+
+  function plotData() {
+
+    loadData();
+
+    groupVar = document.getElementById("group-select").value;
+    plotVar = document.getElementById("y-data-1").value;
+
+    if ((groupVar == "") & (plotVar != "")) {
+      alert("Please select a grouping variable");
+    }
+    
+    if ((groupVar != "") & (plotVar == "")) {
+      alert("Please select a plotting variable");
+    }
+    
+    if ((groupVar == "") & (plotVar == "")) {
+      alert("Please select grouping and plotting variables");
+    }
+
+    if ((groupVar != "") & (plotVar != "")) {
+
+      document.getElementById("footer").style.top = "336px";
+      
+      updateAxisLabels();
+      updateScatter();
+      updateViolin();
+
+    }
+  }
+
+  d3.select("#update-plot-button").on("click", plotData);
+
+  var margin = {top: 20, right: 55, bottom: 50, left: 63};
+
+  var width = 440 - margin.left - margin.right,
+    height = 330 - margin.top - margin.bottom;
+
+  var padding = 15;
 
   xExtent = findExtent(dataXY, 'x');
   yExtent = findExtent(dataXY, 'y');
     
   var xScale = d3.scaleLinear()
-    .range([0, width])
+    .range([padding / 2, width - padding / 2])
     .domain(xExtent).nice();
 
   var yScale = d3.scaleLinear()
-    .range([height, 0])
+    .range([height - padding / 2, padding / 2])
     .domain(yExtent).nice();
 
   var xAxis = d3.axisBottom(xScale).ticks(12),
@@ -166,8 +524,8 @@ d3.csv(file, function(data){
      .attr("width", width + margin.left + margin.right)
      .attr("height", height + margin.top + margin.bottom);
 
+  // X-axis label
   svg.append("text")
-      .transition().duration(duration) 
       .attr("id", "x-label")          
       .attr("transform",
             "translate(" + (width / 2 + margin.left) + " ," + 
@@ -175,11 +533,11 @@ d3.csv(file, function(data){
       .style("text-anchor", "middle")
       .text("");
 
+  // Y-axis label
   svg.append("text")
-      .transition().duration(duration)
       .attr("id", "y-label")
       .attr("transform", "rotate(-90)")
-      .attr("y", 0 - margin.left + 123)
+      .attr("y", 0 - margin.left + 73)
       .attr("x", 0 - (height / 2) - margin.top)
       .attr("dy", "1em")
       .style("text-anchor", "middle")
@@ -223,15 +581,18 @@ d3.csv(file, function(data){
     yExtent = findExtent(dataXY, 'y');
     
     var xScale = d3.scaleLinear()
-      .range([0, width])
+      .range([padding / 2, width - padding / 2])
       .domain(xExtent).nice();
 
     var yScale = d3.scaleLinear()
-      .range([height, 0])
+      .range([height - padding / 2, padding / 2])
       .domain(yExtent).nice();
 
     var xAxis = d3.axisBottom(xScale).ticks(12),
       yAxis = d3.axisLeft(yScale).ticks(12 * height / width);
+
+    d3.select(".x.axis").remove();
+    d3.select(".y.axis").remove();
 
     svg.append("g")
       .attr("class", "x axis ")
@@ -255,11 +616,11 @@ d3.csv(file, function(data){
     let new_xScale = t.rescaleX(xScale);
     
     // Adjust axis labels
-    yAxis.scale(new_yScale);
     xAxis.scale(new_xScale);
-    
-    svg.transition().duration(duration).select('.y.axis').call(yAxis);
-    svg.transition().duration(duration).select('.x.axis').call(xAxis);
+    yAxis.scale(new_yScale);
+
+    svg.transition().duration(duration).select(".x.axis").call(xAxis);
+    svg.transition().duration(duration).select(".y.axis").call(yAxis);
 
     svg.selectAll("circle").remove();
 
@@ -274,7 +635,7 @@ d3.csv(file, function(data){
           .attr("class", "dot")
           .on("mouseover", function(d) {  
               div.transition()    
-                  .duration(100)    
+                  .duration(duration)    
                   .style("opacity", 0.9);    
               div.html("Row " + d.row)  
                   .style("left", (d3.event.pageX) + 1 + "px")   
@@ -282,7 +643,7 @@ d3.csv(file, function(data){
               })          
           .on("mouseout", function(d) {   
               div.transition()    
-                  .duration(100)    
+                  .duration(duration)    
                   .style("opacity", 0); 
           })
           .transition().duration(duration)
@@ -330,8 +691,8 @@ d3.csv(file, function(data){
     xScale = scales[xChoice].copy();
     yScale = scales[yChoice].copy();
     
-    xScale.range([0, width]);
-    yScale.range([height, 0]);
+    xScale.range([padding / 2, width - padding / 2]);
+    yScale.range([height - padding / 2, padding / 2]);
     
     updateScatter();
   }
@@ -389,9 +750,11 @@ function updateViolin() {
     var margin = {top: 20, right: 30, bottom: 50, left: 88};
 
     var width = 430 - margin.left - margin.right,
-      height = 395 - margin.top - margin.bottom;
+      height = 330 - margin.top - margin.bottom;
 
-    // append the svg object to the body of the page
+    var padding = 15;
+
+    // Append the svg object to the body of the page
     var svg = d3.select("#chart-violin")
       .append("svg")
         .attr("width", width + margin.left + margin.right)
@@ -400,7 +763,15 @@ function updateViolin() {
         .attr("transform",
               "translate(" + margin.left + "," + margin.top + ")");
 
-    // Add y-axis label
+    // X-axis label
+    svg.append("text")
+      .attr("id", "x-label-violin")          
+      .attr("y", height + margin.top + 18)
+      .attr("x", width / 2)
+      .style("text-anchor", "middle")
+      .text("Group");
+
+    // Y-axis label
     svg.append("text")
         .attr("id", "y-label-violin")
         .attr("transform", "rotate(-90)")
@@ -412,16 +783,16 @@ function updateViolin() {
 
     // Build and show the Y scale
     var y = d3.scaleLinear()
-      .domain(yExtent).nice()          // Note that here the Y scale is set manually
-      .range([height, 0])
+      .domain(yExtent).nice() // Note that here the Y scale is set manually
+      .range([height - padding / 2, padding / 2])
     svg.append("g")
       .call( d3.axisLeft(y) )
 
     // Build and show the X scale. It is a band scale like for a boxplot: each group has an dedicated RANGE on the axis. This range has a length of x.bandwidth
     var x = d3.scaleBand()
-      .range([0, width])
+      .range([padding / 2, width - padding / 2])
       .domain(groups)
-      .padding(0.05)     // This is important: it is the space between 2 groups. 0 means no padding. 1 is the maximum.
+      .padding(0.05) // This is important: it is the space between 2 groups. 0 means no padding. 1 is the maximum.
     
     svg.append("g")
       .attr("transform", "translate(0," + height + ")")
@@ -430,15 +801,15 @@ function updateViolin() {
     // Features of the histogram
     var histogram = d3.histogram()
           .domain(y.domain())
-          .thresholds(y.ticks(20))    // Important: how many bins approx are going to be made? It is the 'resolution' of the violin plot
+          .thresholds(y.ticks(20)) // Important: how many bins approx are going to be made? It is the 'resolution' of the violin plot
           .value(d => d)
     
     // Compute the binning for each group of the dataset
-    var sumstat = d3.nest()  // nest function allows to group the calculation per level of a factor
+    var sumstat = d3.nest()  // Nest function allows to group the calculation per level of a factor
       .key(function(d) { return d.group;})
       .rollup(function(d) {   // For each key..
-        input = d.map(function(g) { return parseFloat(g.x);})    // Keep the variable called Sepal_Length
-        bins = histogram(input)   // And compute the binning on it.
+        input = d.map(function(g) { return parseFloat(g.y);})    // Keep the Y variable
+        bins = histogram(input)   // And compute the binning on it
         return(bins)
       })
       .entries(dataViolin)
@@ -452,10 +823,9 @@ function updateViolin() {
       if (longuest > maxNum) { maxNum = longuest }
     }
 
-
     // The maximum width of a violin must be x.bandwidth = the width dedicated to a group
     var xNum = d3.scaleLinear()
-      .range([0, x.bandwidth()])
+      .range([padding / 2, x.bandwidth() - padding / 2])
       .domain([-maxNum, maxNum])
 
     // Add the shape to this svg
@@ -486,7 +856,7 @@ function updateViolin() {
     groupCounts[i+1] = [];
   };
   for (var i = 0; i < dataViolin.length; i++) {
-    var key = parseInt(dataViolin[i]["group"].split(" ")[1]);
+    var key = dataViolin[i]["group"];
     var entry = parseFloat(dataViolin[i]["y"]);
     groupCounts[key].push(entry);
     globalCounts.push(entry);
@@ -519,15 +889,15 @@ function updateViolin() {
   // Compute an ordinal xScale for the keys in boxPlotData
   var xScale = d3.scalePoint()
     .domain(Object.keys(groupCounts))
-    .rangeRound([0, width])
-    .padding([0.52]);
+    .rangeRound([padding / 2, width - padding / 2])
+    .padding([0.52 - (nGroups * 0.005)]);
 
   // Compute a global y scale based on the global counts
   var min = d3.min(globalCounts);
   var max = d3.max(globalCounts);
   var yScale = d3.scaleLinear()
     .domain([min, max])
-    .range([0, height]);
+    .range([padding / 2, height - padding / 2]);
 
   // Setup the group the box plot elements will render in
   x_shift = -50 / nGroups;
@@ -540,7 +910,7 @@ function updateViolin() {
     .enter()
     .append("line")
     .attr("x1", function(datum) {
-        return xScale(datum.key) + barWidth/2;
+        return xScale(datum.key) + barWidth / 2;
       }
     )
     .attr("y1", function(datum) {
