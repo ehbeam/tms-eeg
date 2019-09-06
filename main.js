@@ -328,15 +328,15 @@ d3.csv(file, function(data){
     for (var i = 0; i < nGroups; i++) {
 
       var group = i + 1; 
-      var groupMin = document.getElementById("group-min-slider-" + group).value;
-      var groupMax = document.getElementById("group-max-slider-" + group).value;
+      var groupMin = parseFloat(document.getElementById("group-min-slider-" + group).value);
+      var groupMax = parseFloat(document.getElementById("group-max-slider-" + group).value);
 
       values = [];
       for (var k = 0; k < data.length; k++) {
         var xVal = data[k][groupVar];
-        if ((xVal > groupMin) & (xVal < groupMax)) {
+        if ((parseFloat(xVal) > groupMin) & (parseFloat(xVal) < groupMax)) {
           var yVal = data[k][yVar];
-          values.push({ x: xVal, y: parseFloat(yVal), row: k });
+          values.push({ x: parseFloat(xVal), y: parseFloat(yVal), row: k });
           dataViolin.push({ group: group, color: colors[group], x: xVal, y: yVal });
         }
       }
@@ -406,9 +406,9 @@ d3.csv(file, function(data){
       values = [];
       for (var k = 0; k < data.length; k++) {
         var xVal = data[k][groupVar];
-        if ((xVal > groupMin) & (xVal < groupMax)) {
+        if ((parseFloat(xVal) > groupMin) & (parseFloat(xVal) < groupMax)) {
           var yVal = data[k][yVar];
-          values.push({ x: xVal, y: parseFloat(yVal), row: k });
+          values.push({ x: parseFloat(xVal), y: parseFloat(yVal), row: k });
           dataViolin.push({ group: group, color: colors[group], x: xVal, y: yVal });
         }
       }
@@ -807,7 +807,7 @@ function updateViolin() {
     // Compute the binning for each group of the dataset
     var sumstat = d3.nest()  // Nest function allows to group the calculation per level of a factor
       .key(function(d) { return d.group;})
-      .rollup(function(d) {   // For each key..
+      .rollup(function(d) {   // For each key...
         input = d.map(function(g) { return parseFloat(g.y);})    // Keep the Y variable
         bins = histogram(input)   // And compute the binning on it
         return(bins)
@@ -862,7 +862,6 @@ function updateViolin() {
     globalCounts.push(entry);
   }
 
-
   // Sort group counts so quantile methods work
   for(var key in groupCounts) {
     var groupCount = groupCounts[key];
@@ -886,23 +885,26 @@ function updateViolin() {
     }
   }
 
+
   // Compute an ordinal xScale for the keys in boxPlotData
-  var xScale = d3.scalePoint()
-    .domain(Object.keys(groupCounts))
-    .rangeRound([padding / 2, width - padding / 2])
-    .padding([0.52 - (nGroups * 0.005)]);
+  var xScale = d3.scaleBand()
+      .range([padding / 2, width - padding / 2])
+      .domain(groups)
+      .padding(0.05) // This is important: it is the space between 2 groups. 0 means no padding. 1 is the maximum.
 
   // Compute a global y scale based on the global counts
   var min = d3.min(globalCounts);
   var max = d3.max(globalCounts);
   var yScale = d3.scaleLinear()
-    .domain([min, max])
-    .range([padding / 2, height - padding / 2]);
+    .domain(yExtent).nice() // Note that here the Y scale is set manually
+    .range([height - padding / 2, padding / 2])
 
   // Setup the group the box plot elements will render in
-  x_shift = -50 / nGroups;
+  x_shift = margin.left / nGroups;
+  y_shift = margin.top / nGroups;
   var g = svg.append("g")
-    .attr("transform", "translate(" + x_shift + ",0)");
+    .attr("transform",
+          "translate(" + x_shift + "," + y_shift + ")");
 
   // Draw the box plot vertical lines
   var verticalLines = g.selectAll(".verticalLines")
@@ -919,7 +921,7 @@ function updateViolin() {
       }
     )
     .attr("x2", function(datum) {
-        return xScale(datum.key) + barWidth/2;
+        return xScale(datum.key) + barWidth / 2;
       }
     )
     .attr("y2", function(datum) {
@@ -940,7 +942,7 @@ function updateViolin() {
     .attr("width", barWidth)
     .attr("height", function(datum) {
         var quartiles = datum.quartile;
-        var height = yScale(quartiles[2]) - yScale(quartiles[0]);
+        var height = yScale(quartiles[0]) - yScale(quartiles[2]);
         return height;
       }
     )
@@ -950,7 +952,7 @@ function updateViolin() {
     )
     .attr("y", function(datum) {
         if (datum["counts"].length > 0) {
-          return yScale(datum.quartile[0]);
+          return yScale(datum.quartile[2]);
         } 
       }
     )
