@@ -180,6 +180,8 @@ text {
   vertical-align: middle;
   display: inline-block;
   padding-top: 4px;
+  padding-left: 1px;
+  padding-right: 1px;
   margin-top: 0px;
   margin-bottom: 0px;
   margin-left: 0px;
