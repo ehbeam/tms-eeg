@@ -120,8 +120,8 @@ text {
 }
 
 .data-label {
-  width: 120px;
-  margin-left: 15px;
+  width: 125px;
+  margin-left: 14px;
   margin-right: 5px;
   margin-top: 6px;
   margin-bottom: 6px;
@@ -183,6 +183,7 @@ text {
   margin-top: 0px;
   margin-bottom: 0px;
   margin-left: 0px;
+  text-align: center;
 }
 
 .update-button:hover {
